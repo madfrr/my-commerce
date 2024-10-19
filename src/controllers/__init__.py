@@ -10,14 +10,14 @@ def setup_routes(api: FastAPI, config: AppConfig):
         tags=["User"]
     )
     api.include_router(
-        advertising.router,
-        prefix=config.app_prefix,
-        tags=["Advertising"]
-    )
-    api.include_router(
         product.router,
         prefix=config.app_prefix,
         tags=["Product"]
+    )
+    api.include_router(
+        advertising.router,
+        prefix=config.app_prefix,
+        tags=["Advertising"]
     )
     api.include_router(
         transaction.router,
