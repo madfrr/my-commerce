@@ -1,24 +1,28 @@
-from models import UserDTO, CreateUserResponse
-from data.repository import Repo
+from data.repositories.user_repo import UserRepo
+from models import CreateUser, CreateUserResponse, UpdateUser, UserDTO, ListUserDTO, FilterParams
 
 
 class UserDomain:
-    def __init__(self, repo:Repo, config):
-        self.repo:Repo = repo
+    def __init__(self, repo:UserRepo, config):
+        self.repo:UserRepo = repo
         self.config = config
 
-    def create_user(self, user: UserDTO):  
+    def create(self, user: CreateUser) -> CreateUserResponse:  
         id = self.repo.create_user(user)
         return CreateUserResponse(id=id)
     
-    def update_user_name(self):
-        pass
-
-    def read_user(self):
-        pass
-
-    def list_user(self):
-        pass
-
-    def delete_user(self):
-        pass
+    def update(self, user: UpdateUser):
+        return self.repo.update_user(user)
+        
+    def read(self, filter_query: FilterParams) -> ListUserDTO:
+        user_id = filter_query.id
+        email = filter_query.email
+        users = self.repo.read_user(user_id, email)
+        users = [UserDTO(**user) for user in users]
+        return ListUserDTO(users=users)
+    
+    def delete(self, id: str):
+        user = self.repo.read_user(id)
+        if user is None:
+            raise Exception("User doesn't exist.")
+        return self.repo.delete_user(id)
