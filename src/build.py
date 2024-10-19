@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from utils.logger import logger
 from config import AppConfig
 from controllers import setup_routes
+from middlewares import setup_middlewares
 
 
 def create_api(config: AppConfig = AppConfig):
@@ -15,6 +16,7 @@ def create_api(config: AppConfig = AppConfig):
     )
 
     setup_routes(app, config)
+    setup_middlewares(app)
     logger.info(f"[StartAPI]  {config.application_name} - V: {config.version}")
 
     return app
