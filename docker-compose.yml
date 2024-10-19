@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=dev_user
+      - POSTGRES_PASSWORD=secure_password
+      - POSTGRES_DB=mycommercedb
+    ports:
+      - 5432:5432
+    volumes:
+      - ./src/data/dump.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+volumes:
+  pgisdata:
+    external:
+      name: mycommercedb_pgdata
