@@ -5,10 +5,10 @@ from psycopg2.extras import DictCursor
 
 def setup_db(config: AppConfig = AppConfig):
     return PostgresConnectionPool(
-        dbname=config.StonelogDatabase.DBNAME,
-        user=config.StonelogDatabase.USER,
-        password=config.StonelogDatabase.PASSWORD,
-        host=config.StonelogDatabase.HOST,
-        port=config.StonelogDatabase.PORT,
+        dbname=config.Database.DBNAME,
+        user=config.Database.USER,
+        password=config.Database.PASSWORD,
+        host=config.Database.HOST,
+        port=config.Database.PORT,
         maxsize=10,
         cursor_factory=DictCursor)

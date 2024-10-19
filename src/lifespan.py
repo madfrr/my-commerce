@@ -13,7 +13,7 @@ async def lifespan(app: FastAPI):
     Da docs:
     This can be very useful for setting up resources that you need to use for the whole app, and that are shared among requests, and/or that you need to clean up afterwards
     '''
-    app.state.uow = setup_db()
+    app.state.db = setup_db()
     yield
     ''' Run on shutdown
         Close the connection
