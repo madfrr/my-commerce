@@ -27,7 +27,12 @@ class UserRepo:
         data = (user.name, user.email, user.id)
         return self.db.execute(query, data)
 
-    def read_user(self, id: str, email: str) -> List[dict]:
+    def format_output(self, cursor):
+        columns = [value.name for value in cursor.description]
+        data = [dict(zip(columns, row)) for row in cursor]
+        return data
+
+    def read_user(self, id: str=None, email: str=None, format_output=False) -> List[dict]:
         query = """
         select id, "name", email
         from "user"
@@ -41,9 +46,10 @@ class UserRepo:
             query += "\nand email = %s"
             params.append(email)
 
-        if len(params) > 0:
-            return self.db.execute(query, tuple(params))
-        return self.db.execute(query)
+        result = self.db.execute(query, tuple(params))
+        if format_output:
+            return self.format_output(result)
+        return result
     
     def delete_user(self, id: str) -> bool:
         query = """

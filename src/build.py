@@ -3,6 +3,7 @@ from utils.logger import logger
 from config import AppConfig
 from controllers import setup_routes
 from middlewares import setup_middlewares
+from error_handler import setup_error_handler
 from lifespan import lifespan
 
 
@@ -18,6 +19,7 @@ def create_api(config: AppConfig = AppConfig):
 
     setup_routes(app, config)
     setup_middlewares(app)
+    setup_error_handler(app)
     logger.info(f"[StartAPI]  {config.application_name} - V: {config.version}")
 
     return app
