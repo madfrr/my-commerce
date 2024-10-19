@@ -26,7 +26,7 @@ class BasicAuthBackend(AuthenticationBackend):
         if auth != AppConfig.auth_token:
             raise HTTPException(status_code=401, detail="token header invalid!")
 
-        return AuthCredentials(["authenticated"]), SimpleUser()
+        return AuthCredentials(["authenticated"]), SimpleUser("username")
 
 def auth(app):
     app.add_middleware(AuthenticationMiddleware, backend=BasicAuthBackend())
