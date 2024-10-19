@@ -19,4 +19,4 @@ async def lifespan(app: FastAPI):
         Close the connection
         Clear variables and release the resources
     '''
-    app.state.uow.closeall()
+    app.state.db.closeall()
