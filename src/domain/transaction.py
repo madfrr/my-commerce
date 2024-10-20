@@ -1,13 +1,18 @@
 from data.repositories.transaction_repo import TransactionRepo
 from models.transaction import CreateTransaction, CreateTransactionResponse, TransactionDTO, ListTransactionDTO, FilterParams
-
+from exceptions import InvalidTransaction
 
 class TransactionDomain:
     def __init__(self, repo:TransactionRepo, config):
         self.repo:TransactionRepo = repo
         self.config = config
 
-    def create(self, transaction: CreateTransaction) -> CreateTransactionResponse:  
+    def is_valid(self, transaction: CreateTransaction):
+        return transaction.buyer_id != transaction.seller_id
+
+    def create(self, transaction: CreateTransaction) -> CreateTransactionResponse:
+        if not self.is_valid(transaction):
+            raise InvalidTransaction()
         id = self.repo.create_transaction(transaction)
         return CreateTransactionResponse(id=id)
     
