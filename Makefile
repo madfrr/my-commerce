@@ -16,10 +16,10 @@ develop-docker:
 	docker compose up --build
 
 check:
-	ruff check --fix --no-cache ./stonelog_airflow
+	ruff check --fix --no-cache ./src
 
 format:
-	ruff format ./stonelog_airflow
+	ruff format ./src
 
 develop-docker-build:
 	@make build
