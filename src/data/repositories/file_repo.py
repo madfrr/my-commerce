@@ -28,3 +28,16 @@ class FileRepo:
         bucket = self.storage.bucket(self.bucket_name)
         blob = bucket.blob(file_name)
         return blob.exists()
+    
+    def delete_file(self, file_uri):
+        """
+        De acordo com a documentação da GCS, a condição de generation_match_precondition serve para evitar condições de corrida. Um exemplo: Pode ser que um usuário esteja querendo deletar um produto enquanto outro estiver realizando leitura.
+        """
+        file_name = file_uri.split("/")[-1]
+        bucket = self.storage.bucket(self.bucket_name)
+        blob = bucket.blob(file_name)
+
+        blob.reload()  # Fetch blob metadata to use in generation_match_precondition.
+        generation_match_precondition = blob.generation
+
+        return blob.delete(if_generation_match=generation_match_precondition)

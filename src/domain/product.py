@@ -3,6 +3,7 @@ from data.repositories.file_repo import FileRepo
 from models.product import CreateProduct, CreateProductResponse, ProductDTO, ListProductDTO, FilterParams, UpdateProduct, CreatedFilesResponse
 from exceptions import ProductDoesNotExist, InvalidImageType, FileTooBig, FileNotExists
 from typing import List
+from utils.logger import logger
 import uuid
 
 ALLOWED_IMAGE_TYPES = (
@@ -10,6 +11,7 @@ ALLOWED_IMAGE_TYPES = (
     'image/png',
     'image/jpg'
 )
+TAG = "[ProductDomain] |"
 
 class ProductDomain:
     def __init__(self, product_repo: ProductRepo = None, file_repo: FileRepo = None, config = None):
@@ -71,10 +73,22 @@ class ProductDomain:
         data = [ProductDTO(**product) for product in products]
         return ListProductDTO(data=data)
     
+    def delete_files(self, files: List[str]):
+        for file in files:
+            self.file_repo.delete_file(file_uri=file)
+
     def delete(self, id: str):
         product = self.product_repo.read_product(id, format_output=True)
         if len(product) == 0:
             raise ProductDoesNotExist()
         
-        id = product[0].get("id")
-        return self.product_repo.delete_product(id)
+        product = product[0]
+        id = product.get("id")
+        files = product.get("pictures")
+        
+        success_deleted = self.product_repo.delete_product(id)
+        
+        if not success_deleted:
+            logger.error(f"{TAG} {success_deleted}")
+        
+        self.delete_files(files)

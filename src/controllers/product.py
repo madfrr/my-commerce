@@ -53,6 +53,7 @@ def update_product(request: Request, payload: UpdateProduct, response: Response,
     
 @router.delete('/product', response_model=None)
 def delete_product(request: Request, response: Response, id: str, config: AppConfig = Depends(AppConfig)):
-    repo = ProductRepo(db=request.app.state.db)
-    ProductDomain(product_repo=repo, config=config).delete(id)
+    product_repo = ProductRepo(db=request.app.state.db)
+    file_repo = FileRepo(bucket_name=config.file_bucket_name)
+    ProductDomain(product_repo=product_repo, file_repo=file_repo, config=config).delete(id)
     return Response(status_code=200)
