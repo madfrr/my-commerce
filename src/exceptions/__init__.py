@@ -43,3 +43,8 @@ class InvalidImageType(BusinessException):
 class FileTooBig(BusinessException):
     def __init__(self, message="File too big. File size must be under 5MB"):
         super().__init__(message=message, status_code=status.HTTP_400_BAD_REQUEST)
+
+class FileNotExists(BusinessException):
+    def __init__(self, file_uri: str):
+        message = f"File URI doesn't match or exists. URI = {file_uri}"
+        super().__init__(message=message, status_code=status.HTTP_400_BAD_REQUEST)

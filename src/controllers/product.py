@@ -16,8 +16,9 @@ async def create_file(
     response: Response,
     config: AppConfig = Depends(AppConfig)
 ):
-    repo = FileRepo()
-    created_files = ProductDomain(repo=repo, config=config).create_file(user_id=user_id, files=files)
+    repo = FileRepo(bucket_name=config.file_bucket_name)
+
+    created_files = ProductDomain(file_repo=repo, config=config).create_file(user_id=user_id, files=files)
     if created_files.files is None or created_files.files == []:
         raise HTTPException(status_code=500)
     return created_files
@@ -25,9 +26,10 @@ async def create_file(
 
 @router.post('/product', response_model=CreateProductResponse, status_code=201)
 def create_product(request: Request, payload: CreateProduct, response: Response, config: AppConfig = Depends(AppConfig)):    
-    repo = ProductRepo(db=request.app.state.db)
+    product_repo = ProductRepo(db=request.app.state.db)
+    file_repo = FileRepo(bucket_name=config.file_bucket_name)
     
-    product = ProductDomain(repo=repo, config=config).create(payload)
+    product = ProductDomain(product_repo=product_repo, file_repo=file_repo, config=config).create(payload)
     if product is None:
         raise HTTPException(status_code=500)
     response.status_code = 201
@@ -37,19 +39,20 @@ def create_product(request: Request, payload: CreateProduct, response: Response,
 @router.get('/product', response_model=None)
 def read_product(filter_query: Annotated[FilterParams, Query()], request: Request, response: Response, config: AppConfig = Depends(AppConfig)):
     repo = ProductRepo(db=request.app.state.db)
-    result = ProductDomain(repo=repo, config=config).read(filter_query)
+    result = ProductDomain(product_repo=repo, config=config).read(filter_query)
     if len(result.data) == 0:
         return Response(status_code=204)
     return result
 
 @router.patch('/product', response_model=None)
 def update_product(request: Request, payload: UpdateProduct, response: Response, config: AppConfig = Depends(AppConfig)):
-    repo = ProductRepo(db=request.app.state.db)
-    ProductDomain(repo=repo, config=config).update(payload)
+    product_repo = ProductRepo(db=request.app.state.db)
+    file_repo = FileRepo(bucket_name=config.file_bucket_name)
+    ProductDomain(product_repo=product_repo, file_repo=file_repo, config=config).update(payload)
     return Response(status_code=200)
     
 @router.delete('/product', response_model=None)
 def delete_product(request: Request, response: Response, id: str, config: AppConfig = Depends(AppConfig)):
     repo = ProductRepo(db=request.app.state.db)
-    ProductDomain(repo=repo, config=config).delete(id)
+    ProductDomain(product_repo=repo, config=config).delete(id)
     return Response(status_code=200)

@@ -14,6 +14,7 @@ class AppConfig:
 
     docs_url = f'{app_prefix}/docs'
     redoc_url = f'{app_prefix}/redoc'
+    file_bucket_name = getenv('FILE_BUCKET_NAME')
 
     class Database:
         CONNECTION_TIMEOUT = int(

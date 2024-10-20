@@ -1,7 +1,8 @@
 from data.repositories.product_repo import ProductRepo
 from data.repositories.file_repo import FileRepo
 from models.product import CreateProduct, CreateProductResponse, ProductDTO, ListProductDTO, FilterParams, UpdateProduct, CreatedFilesResponse
-from exceptions import ProductDoesNotExist, InvalidImageType, FileTooBig
+from exceptions import ProductDoesNotExist, InvalidImageType, FileTooBig, FileNotExists
+from typing import List
 import uuid
 
 ALLOWED_IMAGE_TYPES = (
@@ -11,12 +12,20 @@ ALLOWED_IMAGE_TYPES = (
 )
 
 class ProductDomain:
-    def __init__(self, repo:ProductRepo, config):
-        self.repo:ProductRepo | FileRepo = repo
+    def __init__(self, product_repo: ProductRepo = None, file_repo: FileRepo = None, config = None):
+        self.product_repo: ProductRepo = product_repo
+        self.file_repo: FileRepo = file_repo
+
         self.config = config
 
-    def create(self, product: CreateProduct) -> CreateProductResponse:  
-        id = self.repo.create_product(product)
+    def _check_if_pictures_exists(self, pictures: List[str]):
+        for pic in pictures:
+            if not self.file_repo.file_exists(pic):
+                raise FileNotExists(pic)
+
+    def create(self, product: CreateProduct) -> CreateProductResponse:
+        self._check_if_pictures_exists(product.pictures)
+        id = self.product_repo.create_product(product)
         return CreateProductResponse(id=id)
 
     def _validate_image_time(self, content_type):
@@ -43,29 +52,29 @@ class ProductDomain:
             self._validate_max_file_size(file.size)
 
             file_name = self._generate_file_name(user_id, file.filename)
-            link = self.repo.save_picture(
+            link = self.file_repo.save_picture(
                 file=file.file.read(),
                 file_name=file_name,
-                bucket_name="my_commerce_product_images",
                 content_type=file.content_type,
             )
             links.append(link)
         return CreatedFilesResponse(files=links)
 
     def update(self, product: UpdateProduct):
-        return self.repo.update_product(product)
+        self._check_if_pictures_exists(product.pictures)
+        return self.product_repo.update_product(product)
         
     def read(self, filter_query: FilterParams) -> ListProductDTO:
         user_id = filter_query.id
         name = filter_query.name
-        products = self.repo.read_product(user_id, name)
+        products = self.product_repo.read_product(user_id, name)
         data = [ProductDTO(**product) for product in products]
         return ListProductDTO(data=data)
     
     def delete(self, id: str):
-        product = self.repo.read_product(id, format_output=True)
+        product = self.product_repo.read_product(id, format_output=True)
         if len(product) == 0:
             raise ProductDoesNotExist()
         
         id = product[0].get("id")
-        return self.repo.delete_product(id)
+        return self.product_repo.delete_product(id)
