@@ -1,5 +1,7 @@
 from os import getenv
-
+from dotenv import load_dotenv
+from pathlib import Path
+load_dotenv(Path(__file__).parent.parent / '.env')
 
 class AppConfig:
     app_prefix = "/api/my-commerce"

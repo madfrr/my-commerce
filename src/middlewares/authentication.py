@@ -2,14 +2,24 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.authentication import AuthenticationBackend, AuthCredentials, SimpleUser
 from fastapi import HTTPException
 from config import AppConfig
-
+from utils.logger import logger
 
 class BasicAuthBackend(AuthenticationBackend):
-    def __init__(self):
-        self.free_paths = [f"{AppConfig.app_prefix}/health-check"]
+
+    def free_paths(self, path):
+        paths = [
+            f"{AppConfig.app_prefix}/health-check",
+            f"{AppConfig.app_prefix}/docs",
+            "/openapi.json"
+        ]
+        for free_path in paths:
+            if free_path in path:
+                return True
+            
+        return False
 
     async def authenticate(self, conn):
-        if conn.url.path in self.free_paths:
+        if self.free_paths(conn.url.path):
             return
 
         if "Authorization" not in conn.headers:
