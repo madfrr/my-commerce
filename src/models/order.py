@@ -3,11 +3,34 @@ from typing import List
 from datetime import datetime
 
 class CreateOrderResponse(BaseModel):
-    id: str
+    id: int
 
-class OrderDTO(BaseModel):
+class CreateOrder(BaseModel):
     name: str
     transaction_id: str
     advertising_id: int
     price: float
-    created_at: datetime = None
+    created_at: datetime | None = None
+
+class UpdateOrder:
+    id: int
+    name: str | None
+    transaction_id: str | None
+    advertising_id: int | None
+    price: float | None
+
+class OrderDTO:
+    id: int | None = None
+    name: str | None = None
+    transaction_id: str | None = None
+    advertising_id: int | None = None
+    price: float | None = None
+    created_at: datetime | None = None
+
+class ListOrderDTO(BaseModel):
+    data: List[OrderDTO]
+
+class FilterParams(BaseModel):
+    id: str | None = None
+    transaction_id: str | None = None
+    advertising_id: int | None = None

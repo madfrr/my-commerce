@@ -1,14 +1,13 @@
-from data.gevent_pgsql import AbstractDatabaseConnectionPool
 from typing import List
-from models.user import UpdateUser
+from models.user import UpdateUser, CreateUser
+from data.repositories.abstract_repo import AbstractRepo
 
 
-
-class UserRepo:
+class UserRepo(AbstractRepo):
     def __init__(self, db):
-        self.db:AbstractDatabaseConnectionPool = db
+        super().__init__(db)
 
-    def create_user(self, UserDTO) -> str:
+    def create_user(self, UserDTO: CreateUser) -> str:
         query = """
         insert into "user"(name, email)
         values %s
@@ -26,11 +25,6 @@ class UserRepo:
         """
         data = (user.name, user.email, user.id)
         return self.db.execute(query, data)
-
-    def format_output(self, cursor):
-        columns = [value.name for value in cursor.description]
-        data = [dict(zip(columns, row)) for row in cursor]
-        return data
 
     def read_user(self, id: str=None, email: str=None, format_output=False) -> List[dict]:
         query = """

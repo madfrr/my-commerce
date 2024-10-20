@@ -20,7 +20,7 @@ class UserDTO(BaseModel):
     email: str | None = None
 
 class ListUserDTO(BaseModel):
-    users: List[UserDTO]
+    data: List[UserDTO]
 
 class FilterParams(BaseModel):
     id: str | None = None

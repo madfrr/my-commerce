@@ -1,6 +1,6 @@
 from data.repositories.user_repo import UserRepo
 from models import CreateUser, CreateUserResponse, UpdateUser, UserDTO, ListUserDTO, FilterParams
-
+from exceptions import UserDoesNotExist
 
 class UserDomain:
     def __init__(self, repo:UserRepo, config):
@@ -13,7 +13,7 @@ class UserDomain:
     
     def update(self, user: UpdateUser):
         return self.repo.update_user(user)
-        
+
     def read(self, filter_query: FilterParams) -> ListUserDTO:
         user_id = filter_query.id
         email = filter_query.email
@@ -22,7 +22,8 @@ class UserDomain:
         return ListUserDTO(users=users)
     
     def delete(self, id: str):
-        user = self.repo.read_user(id)
-        if user is None:
-            raise Exception("User doesn't exist.")
+        user = self.repo.read_user(id, format_output=True)
+        if len(user) == 0:
+            raise UserDoesNotExist()
+        id = user[0].get("id")
         return self.repo.delete_user(id)

@@ -24,7 +24,7 @@ def create_user(request: Request, payload: CreateUser, response: Response, confi
 def read_user(filter_query: Annotated[FilterParams, Query()], request: Request, response: Response, config: AppConfig = Depends(AppConfig)):
     repo = UserRepo(db=request.app.state.db)
     result = UserDomain(repo=repo, config=config).read(filter_query)
-    if len(result.users) == 0:
+    if len(result.data) == 0:
         return Response(status_code=204)
     return result
 
