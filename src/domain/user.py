@@ -19,7 +19,7 @@ class UserDomain:
         email = filter_query.email
         users = self.repo.read_user(user_id, email)
         users = [UserDTO(**user) for user in users]
-        return ListUserDTO(users=users)
+        return ListUserDTO(data=users)
     
     def delete(self, id: str):
         user = self.repo.read_user(id, format_output=True)

@@ -27,3 +27,6 @@ class ListProductDTO(BaseModel):
 class FilterParams(BaseModel):
     id: str | None = None
     name: str | None = None
+
+class CreatedFilesResponse(BaseModel):
+    files: List[str] = []

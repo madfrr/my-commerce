@@ -12,14 +12,14 @@ class CreateOrder(BaseModel):
     price: float
     created_at: datetime | None = None
 
-class UpdateOrder:
+class UpdateOrder(BaseModel):
     id: int
     name: str | None
     transaction_id: str | None
     advertising_id: int | None
     price: float | None
 
-class OrderDTO:
+class OrderDTO(BaseModel):
     id: int | None = None
     name: str | None = None
     transaction_id: str | None = None
