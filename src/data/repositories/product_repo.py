@@ -1,19 +1,19 @@
 from data.repositories.abstract_repo import AbstractRepo
 from typing import List
-from models.product import UpdateProduct
+from models.product import UpdateProduct, ProductDTO
 
 
 class ProductRepo(AbstractRepo):
     def __init__(self, db):
         super().__init__(db)
 
-    def create_product(self, ProductDTO) -> str:
+    def create_product(self, product: ProductDTO) -> str:
         query = """
         insert into product("name", description, pictures)
         values %s
         RETURNING id;
         """
-        data = ((ProductDTO.name, ProductDTO.description, ProductDTO.pictures),)
+        data = ((product.name, product.description, product.pictures),)
         id = self.db.execute_values(insert_query=query, data=data, fetch=True)
         return id[0][0]
 

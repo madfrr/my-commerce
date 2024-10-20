@@ -1,12 +1,27 @@
-from fastapi import APIRouter, Depends, Response, Request, HTTPException, Query
-from models.product import CreateProductResponse, CreateProduct, FilterParams, UpdateProduct
+from fastapi import APIRouter, Depends, Response, Request, HTTPException, Query, File, Form, UploadFile
+from models.product import CreateProductResponse, CreateProduct, FilterParams, UpdateProduct, CreatedFilesResponse
 from domain.product import ProductDomain
 from config import AppConfig
 from data.repositories.product_repo import ProductRepo
-from typing import Annotated
+from data.repositories.file_repo import FileRepo
+from typing import Annotated, List
 
 
 router = APIRouter()
+
+@router.post("/files", response_model=CreatedFilesResponse, status_code=201)
+async def create_file(
+    files: List[Annotated[UploadFile, File()]],
+    user_id: Annotated[str, Form()],
+    response: Response,
+    config: AppConfig = Depends(AppConfig)
+):
+    repo = FileRepo()
+    created_files = ProductDomain(repo=repo, config=config).create_file(user_id=user_id, files=files)
+    if created_files.files is None or created_files.files == []:
+        raise HTTPException(status_code=500)
+    return created_files
+    
 
 @router.post('/product', response_model=CreateProductResponse, status_code=201)
 def create_product(request: Request, payload: CreateProduct, response: Response, config: AppConfig = Depends(AppConfig)):    
