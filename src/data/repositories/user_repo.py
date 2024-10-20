@@ -26,7 +26,7 @@ class UserRepo(AbstractRepo):
         data = (user.name, user.email, user.id)
         return self.db.execute(query, data)
 
-    def read_user(self, id: str=None, email: str=None, format_output=False) -> List[dict]:
+    def read_user(self, id: str = None, email: str = None, format_output=False) -> List[dict]:
         query = """
         select id, "name", email
         from "user"
@@ -44,7 +44,7 @@ class UserRepo(AbstractRepo):
         if format_output:
             return self.format_output(result)
         return result
-    
+
     def delete_user(self, id: str) -> bool:
         query = """
         DELETE FROM "user"

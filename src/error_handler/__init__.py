@@ -9,56 +9,45 @@ from utils.logger import logger
 async def handle_business_exception(request: Request, exception: Exception):
     return JSONResponse(
         status_code=exception.status_code,
-        content={
-            "error": type(exception).__name__,
-            "message": exception.message
-        }
+        content={"error": type(exception).__name__, "message": exception.message},
     )
 
 
 async def handle_value_error(request: Request, exception: Exception):
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content={
-            "error": type(exception).__name__,
-            "message": str(exception)
-        }
+        content={"error": type(exception).__name__, "message": str(exception)},
     )
 
 
 def find_error_name(error):
-    return str(type(error)).replace("'>", "").split('.')[-1]
+    return str(type(error)).replace("'>", "").split(".")[-1]
 
 
 async def handle_validation_error(request: Request, exception: Exception):
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content={
-            "error": find_error_name(exception),
-            "message": exception.errors()
-        }
+        content={"error": find_error_name(exception), "message": exception.errors()},
     )
 
 
 async def handle_fastapi_http_exception(request: Request, exception: Exception):
     return JSONResponse(
         status_code=exception.status_code,
-        content={
-            "error": type(exception).__name__,
-            "message": exception.detail
-        }
+        content={"error": type(exception).__name__, "message": exception.detail},
     )
 
 
 async def handle_unexpected_error(request: Request, exception: Exception):
     logger.error(
-        f'UnexpectedException | An exception of type {type(exception).__name__} occurred. Details: {str(exception)}')
+        f"UnexpectedException | An exception of type {type(exception).__name__} occurred. Details: {str(exception)}"
+    )
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
-            'error': 'UnexpectedException',
-            'message': 'An unexpected error has occurred.'
-        }
+            "error": "UnexpectedException",
+            "message": "An unexpected error has occurred.",
+        },
     )
 
 

@@ -6,7 +6,7 @@ from models.order import CreateOrder, UpdateOrder
 
 class OrderRepo(AbstractRepo):
     def __init__(self, db):
-        self.db:AbstractDatabaseConnectionPool = db
+        self.db: AbstractDatabaseConnectionPool = db
 
     def create_order(self, order: CreateOrder) -> str:
         query = """
@@ -24,10 +24,22 @@ class OrderRepo(AbstractRepo):
         SET (name, transaction_id, advertising_id, price) = (%s, %s, %s, %s)
         WHERE id= %s;
         """
-        data = (order.name, order.transaction_id, order.advertising_id, order.price, order.id)
+        data = (
+            order.name,
+            order.transaction_id,
+            order.advertising_id,
+            order.price,
+            order.id,
+        )
         return self.db.execute(query, data)
 
-    def read_order(self, id: int=None, transaction_id: str=None, advertising_id: int= None, format_output=False) -> List[dict]:
+    def read_order(
+        self,
+        id: int = None,
+        transaction_id: str = None,
+        advertising_id: int = None,
+        format_output=False,
+    ) -> List[dict]:
         query = """
         select 
             id, 
@@ -56,7 +68,7 @@ class OrderRepo(AbstractRepo):
         if format_output:
             return self.format_output(result)
         return result
-    
+
     def delete_order(self, id: int) -> bool:
         query = """
         DELETE FROM order

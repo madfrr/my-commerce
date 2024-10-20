@@ -2,8 +2,10 @@ from pydantic import BaseModel
 from typing import List
 from datetime import datetime
 
+
 class CreateAdvertisingResponse(BaseModel):
     id: int
+
 
 class CreateAdvertising(BaseModel):
     user_id: str
@@ -12,6 +14,7 @@ class CreateAdvertising(BaseModel):
     expiration_timestamp: datetime
     quantity: int
     unit_price: float
+
 
 class UpdateAdvertising(BaseModel):
     id: int
@@ -22,6 +25,7 @@ class UpdateAdvertising(BaseModel):
     quantity: int | None
     unit_price: float | None
 
+
 class AdvertisingDTO(BaseModel):
     id: int | None = None
     user_id: str | None = None
@@ -31,8 +35,10 @@ class AdvertisingDTO(BaseModel):
     quantity: int | None = None
     unit_price: float | None = None
 
+
 class ListAdvertisingDTO(BaseModel):
     data: List[AdvertisingDTO]
+
 
 class FilterParams(BaseModel):
     id: int | None = None

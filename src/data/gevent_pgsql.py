@@ -18,7 +18,7 @@ else:
 
     integer_types = (int, __builtin__.long)
 
-tag = '[Connection_Pool] |'
+tag = "[Connection_Pool] |"
 
 
 def gevent_wait_callback(conn, timeout=None):
@@ -53,14 +53,15 @@ class AbstractDatabaseConnectionPool(object):
         pool = self.pool
 
         logger.info(
-            f"{tag}  open_connections_count: {self.size} / pool_size: {pool.qsize()}  max_connections:{self.maxsize}")
+            f"{tag}  open_connections_count: {self.size} / pool_size: {pool.qsize()}  max_connections:{self.maxsize}"
+        )
 
         try:
             if self.size >= self.maxsize or pool.qsize():
                 conn = pool.get(block=False, timeout=2)
                 logger.info(f"{tag}  got connection from pool")
                 return conn
-        except:
+        except Exception:
             pass
 
         logger.info(f"{tag}  could not get a connection from pool")
@@ -106,9 +107,7 @@ class AbstractDatabaseConnectionPool(object):
             raise
         else:
             if conn.closed:
-                raise OperationalError(
-                    "Cannot commit because connection was closed: %r" % (conn,)
-                )
+                raise OperationalError("Cannot commit because connection was closed: %r" % (conn,))
             conn.commit()
         finally:
             if conn is not None and not conn.closed:
@@ -125,7 +124,7 @@ class AbstractDatabaseConnectionPool(object):
     def _rollback(self, conn):
         try:
             conn.rollback()
-        except:
+        except Exception:
             gevent.get_hub().handle_error(conn, *sys.exc_info())
             return
         return conn
@@ -183,22 +182,23 @@ class PostgresConnectionPool(AbstractDatabaseConnectionPool):
         AbstractDatabaseConnectionPool.__init__(self, maxsize)
 
     def create_connection(self):
-        logger.debug(f'Iniciando conexao com o {self.dbname}')
+        logger.debug(f"Iniciando conexao com o {self.dbname}")
         s = time.time()
 
-        connection = self.connect(dbname=self.dbname,
-                                  user=self.user,
-                                  password=self.password,
-                                  host=self.host,
-                                  port=self.port,
-                                  keepalives=1,
-                                  keepalives_idle=5,
-                                  keepalives_interval=2,
-                                  keepalives_count=2,
-                                  **self.kwargs)
+        connection = self.connect(
+            dbname=self.dbname,
+            user=self.user,
+            password=self.password,
+            host=self.host,
+            port=self.port,
+            keepalives=1,
+            keepalives_idle=5,
+            keepalives_interval=2,
+            keepalives_count=2,
+            **self.kwargs,
+        )
 
-        logger.debug(
-            f'Conectado com sucesso ao {self.dbname} ->  {time.time() - s} segundos')
+        logger.debug(f"Conectado com sucesso ao {self.dbname} ->  {time.time() - s} segundos")
         connection.set_session(autocommit=False)
 
         return connection

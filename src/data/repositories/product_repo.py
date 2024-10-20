@@ -26,7 +26,7 @@ class ProductRepo(AbstractRepo):
         data = (product.name, product.description, product.pictures, product.id)
         return self.db.execute(query, data)
 
-    def read_product(self, id: str=None, name: str=None, format_output=False) -> List[dict]:
+    def read_product(self, id: str = None, name: str = None, format_output=False) -> List[dict]:
         query = """
         select id, "name", description, pictures
         from product
@@ -45,7 +45,7 @@ class ProductRepo(AbstractRepo):
         if format_output:
             return self.format_output(result)
         return result
-    
+
     def delete_product(self, id: str) -> bool:
         query = """
         DELETE FROM product

@@ -11,4 +11,5 @@ def setup_db(config: AppConfig = AppConfig):
         host=config.Database.HOST,
         port=config.Database.PORT,
         maxsize=10,
-        cursor_factory=DictCursor)
+        cursor_factory=DictCursor,
+    )

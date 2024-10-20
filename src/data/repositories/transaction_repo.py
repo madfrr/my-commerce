@@ -6,7 +6,7 @@ from models.transaction import CreateTransaction
 
 class TransactionRepo(AbstractRepo):
     def __init__(self, db):
-        self.db:AbstractDatabaseConnectionPool = db
+        self.db: AbstractDatabaseConnectionPool = db
 
     def create_transaction(self, transaction: CreateTransaction) -> str:
         query = """
@@ -18,7 +18,13 @@ class TransactionRepo(AbstractRepo):
         id = self.db.execute_values(insert_query=query, data=data, fetch=True)
         return id[0][0]
 
-    def read_transaction(self, id: int=None, buyer_id: str=None, seller_id: int= None, format_output=False) -> List[dict]:
+    def read_transaction(
+        self,
+        id: int = None,
+        buyer_id: str = None,
+        seller_id: int = None,
+        format_output=False,
+    ) -> List[dict]:
         query = """
         select 
             id, 

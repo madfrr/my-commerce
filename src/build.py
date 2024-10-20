@@ -14,7 +14,7 @@ def create_api(config: AppConfig = AppConfig):
         version=config.version,
         docs_url=config.docs_url,
         redoc_url=config.redoc_url,
-        lifespan=lifespan
+        lifespan=lifespan,
     )
 
     setup_routes(app, config)

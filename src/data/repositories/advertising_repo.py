@@ -6,7 +6,7 @@ from models.advertising import UpdateAdvertising, CreateAdvertising
 
 class AdvertisingRepo(AbstractRepo):
     def __init__(self, db):
-        self.db:AbstractDatabaseConnectionPool = db
+        self.db: AbstractDatabaseConnectionPool = db
 
     def create_advertising(self, advertising: CreateAdvertising) -> str:
         query = """
@@ -14,7 +14,16 @@ class AdvertisingRepo(AbstractRepo):
         values %s
         RETURNING id;
         """
-        data = ((advertising.user_id, advertising.product_id, advertising.status, advertising.expiration_timestamp, advertising.quantity, advertising.unit_price),)
+        data = (
+            (
+                advertising.user_id,
+                advertising.product_id,
+                advertising.status,
+                advertising.expiration_timestamp,
+                advertising.quantity,
+                advertising.unit_price,
+            ),
+        )
         id = self.db.execute_values(insert_query=query, data=data, fetch=True)
         return id[0][0]
 
@@ -24,10 +33,25 @@ class AdvertisingRepo(AbstractRepo):
         SET (user_id, product_id, status, expiration_timestamp, quantity, unit_price) = (%s, %s, %s, %s, %s, %s)
         WHERE id= %s;
         """
-        data = (advertising.name, advertising.user_id, advertising.product_id, advertising.status, advertising.expiration_timestamp, advertising.quantity, advertising.unit_price, advertising.id)
+        data = (
+            advertising.name,
+            advertising.user_id,
+            advertising.product_id,
+            advertising.status,
+            advertising.expiration_timestamp,
+            advertising.quantity,
+            advertising.unit_price,
+            advertising.id,
+        )
         return self.db.execute(query, data)
 
-    def read_advertising(self, id: int=None, user_id: str=None, product_id: int= None, format_output=False) -> List[dict]:
+    def read_advertising(
+        self,
+        id: int = None,
+        user_id: str = None,
+        product_id: int = None,
+        format_output=False,
+    ) -> List[dict]:
         query = """
         select 
             id, 
@@ -57,7 +81,7 @@ class AdvertisingRepo(AbstractRepo):
         if format_output:
             return self.format_output(result)
         return result
-    
+
     def delete_advertising(self, id: str) -> bool:
         query = """
         DELETE FROM advertising
