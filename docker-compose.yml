@@ -9,6 +9,14 @@ services:
       - 5432:5432
     volumes:
       - ./src/data/dump.sql:/docker-entrypoint-initdb.d/create_tables.sql
+  api:
+    build:
+      context: .
+    env_file: .env
+    volumes:
+      - ./src:/api
+    network_mode: "host"
+    
 
 volumes:
   pgisdata:
