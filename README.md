@@ -80,7 +80,7 @@ Como Modelo Entidade Relacionamento (MER), as seguintes entidades foram elaborad
 - Um Advertising pode ter no mínimo 0 produtos. Quando chega a esse valor, ele é desativado;
 - Quando a data de expiração de um Advertising é alcançada, ele é desativado;
 
-![MER](image.png)
+![MER](mer.png)
 
 #### Observações: 
 	- Entidade "Order" foi criada pois a relação de transaction e Advertising estava N..N
