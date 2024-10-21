@@ -1,7 +1,9 @@
 from os import getenv
 from dotenv import load_dotenv
 from pathlib import Path
-load_dotenv(Path(__file__).parent.parent / '.env')
+
+load_dotenv(Path(__file__).parent.parent / ".env")
+
 
 class AppConfig:
     app_prefix = "/api/my-commerce"
@@ -22,3 +24,4 @@ class AppConfig:
         PASSWORD = getenv("PGSQL_PASSWORD")
         DBNAME = getenv("PGSQL_DBNAME")
         PORT = getenv("PGSQL_PORT")
+        MAX_SIZE = getenv("PGSQL_MAX_SIZE", 10)
