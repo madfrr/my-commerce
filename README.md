@@ -6,11 +6,11 @@ My-Commerce é um sistema que suporta operações básicas de e-commerce, como g
 Esse projeto também serve para ser utilizado como boilerplate.
 
 ## Instruções para Compilar e Executar o Projeto
-## Como Usar
+### Como Usar
 
 O primeiro passo é fazer uma cópia do arquivo `.env_sample` e o renomear para `.env`. Após isso, é possível seguir com a execução do projeto utilizando ou não Docker.
 
-### Docker
+#### Docker
 Caso não houver docker instalado, é necessário fazer a instalação seguindos os passos em: [link docker](https://www.docker.com/products/docker-desktop), [link docker compose](https://docs.docker.com/compose/install/);
 
 Para executar, basta digitar o comando abaixo no terminal
@@ -30,7 +30,7 @@ Com isso, tanto uma instancia do Postgres quanto a API serão levantadas. Para t
 curl --location 'localhost:5000/api/my-commerce/health-check'
 ```
 
-### Sem Docker
+#### Sem Docker
 Caso deseje executar a aplicação em ambiente de desenvolvimento, para execução de testes, deve-se primeiro verificar se a versão instalada do Pythom em seu sistema operacional é maior ou igual a 3.10.12, por motivos de compatibilidade. Caso afirmativo, executar os seguintes comandos no terminal:
 ```bash
 python3 -m venv venv 
@@ -83,70 +83,77 @@ Como Modelo Entidade Relacionamento (MER), as seguintes entidades foram elaborad
 ![MER](mer.png)
 
 #### Observações: 
-	- Entidade "Order" foi criada pois a relação de transaction e Advertising estava N..N
-	- No MeLi, o cliente consegue fazer apenas um pagamento e esse pagamento pode ser a compra de vários produtos de anúncios de vendedores diferentes. Mas para simplificar o diagrama, vamos considerar que o cliente consegue comprar/pagar 1 produto por vez;
-	- No MER, produto aparece como entidade fraca de advertising, porém considerei com chave própria pois como o modelo está em estágio inicial, senti que seria uma melhoria prematura. Sem contar que essa modelagem pode evoluir para projetos como deduplicação de anúncios (onde existem vários anúncios com as mesmas características e produtos "iguais"), por exemplo.
+- Entidade "Order" foi criada pois a relação de transaction e Advertising estava N..N
+- No MeLi, o cliente consegue fazer apenas um pagamento e esse pagamento pode ser a compra de vários produtos de anúncios de vendedores diferentes. Mas para simplificar o diagrama, vamos considerar que o cliente consegue comprar/pagar 1 produto por vez;
+- No MER, produto aparece como entidade fraca de advertising, porém considerei com chave própria pois como o modelo está em estágio inicial, senti que seria uma melhoria prematura. Sem contar que essa modelagem pode evoluir para projetos como deduplicação de anúncios (onde existem vários anúncios com as mesmas características e produtos "iguais"), por exemplo.
     
 
 ### Arquitetura da API
-Algumas regras de negócio são:
-- 
-### Estrutura de Pastas
+
+A arquitetura da API pode ser entendida observando a estrutura de pastas abaixo. Resumidamente, todas as classes responsaveis pela interação com a camada HTTP se encontra na pasta `controllers`. Essas classes, chamam as responsáveis pela regra de negócio na camada de domínio (ou `domain`) que por sua vez interage com bancos de dados e serviços externos pela camada de repositório (ou `repositories`).
+
+Na pasta `data`, além de encontrar os repositórios, também são encontrados as classes de conexão com banco de dados e um dump do próprio banco.
+
+Em `error_handler` e `exceptions`, são encontradas todas as lógicas para lidar com qualquer erro da aplicação.
+
+Em `models` são encontrados os DTOs e as classes de definição/serialização de objetos. Também são uteis para documentação. 
+
+Algumas funcionalidades devem ser executadas como `middlewares`, ou seja, códigos que devem ser executados antes das requisições, como por exemplo validação de CORs e autenticação.
+
+Lógicas que são comuns em vários lugares, são encontradas dentro de `utils`.
+
+Para finalizar, foi utilizado o design pattern de *factory* com o objeto da API (objeto FastAPI). Basicamente, quando o app passa por algum método com prefixo "setup_", o app é modificado para receber esse novo conjunto de funcionalidades. Dessa forma fica fácil acoplar, desacoplar tanto as funcionalidades que já existem quanto novas. Sem contar que é possível reaproveitar essas funcionalidades em outras APIs. 
+Tudo isso é possível ser observado a partir do método `create_api` no arquivo `build.py`. Exemplo: caso o desenvolvedor deseja remover os middlewares, basta remover a linha `setup_middlewares(app)`.
+
+```
+src
+├── controllers
+├── data
+│   ├── dump.sql
+│   ├── gevent_pgsql.py
+│   ├── __init__.py
+│   └── repositories
+├── domain
+├── error_handler
+├── exceptions
+├── middlewares
+├── models
+├── utils
+├── server.py
+├── lifespan.py
+├── build.py
+└── config.py
+```
+
 ### Justificativa para Frameworks ou Bibliotecas
+
+- FastAPI: Dentre as frameworks de desenvolvimento web em python, é uma das mais rápidas, permitindo processamento assíncrono de requisições. Possui integração nativa com OpenAPI, facilitando a criação de documentações, também possui tipagem forte na camada de HTTP, é bem adotado pela comunidade, tem atualizações frequentes e documentação bem escrita e com exemplos. Também foi cogitado utilizar Flask com SQLAlchemy, porém acredito que FastAPI seja mais prático.
+
+- Pytest, pytest-cov, pytest-mock, pytest-env e pytest-docker: Usado para testes unitários e funcionais. São bibliotecas simples e eficazes o suficiente para garantir cobertura, detectar bugs e fazer mock de funções e métodos sem a necessidade de criar classes específicas de mock. Com o pytest-mock, também é possível investigar a quantidade de vezes que uma função é chamada e se os argumentos de entrada e retorno estão corretos. Com pytest-docker é possível levantar serviços e bancos no momento de execução de testes.
+
+- ruff: É o linter que prefiro. Útil para manter um padrão de código, identificação de variáveis e importações não utilizadas, facilitando a leitura e manutenção do código.
+
+- google-cloud-storage: Client da GCP para manipulação de arquivos no bucket da google, que eles chamam de cloud storage.
+
+- psycopg2: Driver de conexão com PostgreSQL.
 
 ## Trabalhos Futuros
 ### Regras de negócio:
 - No endpoint de atualização de Advertising, adicionar regra de quando zerar a quantidade (quantity), atualizar o status para inativo;
 - Ao criar uma order, atualizar Advertising com a regra acima, ou seja, toda order criada atualiza a quantity e status de uma Advertising;
 
-### Arquitetura
+### Arquitetura:
+- Criar fila no Google Cloud Pub/Sub;
+- Publicar toda operação de escrita de transições no Pub/Sub;
+- Criar worker responsável por analisar e alertar sobre fraudes, além de popular o GraphQL.
+- Adicionar monitoramento como Requests por minuto (RPM), tempo médio das requisições, tempo médio em 80, 90 e 95 percentil, quantidade de erros por requisição por dia e erros 500 não mapeados. Tudo isso é possível ser feito pelo Datadog.
+
+### Código:
+- Melhorar a cobertura de testes;
+- Adicionar mais testes funcionais;
+- Adicionar novas funcionalidades para files. Talvez transformar ele em uma entidade com próprio controller e domain.
 
 ## Observações
 ## Links Úteis
     - Link do diagrama
     - Link do vídeo
-
-
-- CRUD simples de todas as entidades (create, read, read_list, update, delete) -> foi
-- Adicionar Error handler -> foi
-- Middleware para autenticação -> foi
-- Subir postgres local -> foi
-- Transaction buyer_id e seller_id tem que ser diferente  -> foi
-- Deixar user.email unique -> foi
-- Criar a freeaccount na GCP pro gsferreira.dev@gmail.com -> foi
-- Criar Banco postgres sql -> foi
-- Criar o bucket -> foi
-- Criar código da function de produto -> foi
-- Criar a Function -> foi
-- CREATE, UPDATE, DELETE de produto bate na function, alterar na API -> foi
-- Dockerfile -> foi
-- Criar Cloud Run. -> foi
-- Liberar acesso do ip publico para meu ip -> foi
-- CI/CD GithubActions -> foi
-
-
-Amanhã:
-- Documentação
-    - Fazer um readme detalhado, com os diagramas, tomadas de decisão, o que foi feito em cloud, o que falta fazer
-    - Puxar o PDF ou JPG do draw.io para jogar aqui. Também puxar o arquivo do próprio draw.io
-
-Vídeo:
-    - Passar pelo diagrama ER
-    - Falar o que foi feito em relação de serviço
-    - Mostrar o que está deployado
-    - Mostrar o banco de dados vazio
-    - Rodar os Selects
-    - Dizer o que falta fazer.
-
-O que faltaria fazer
-- Datadog
-- Criar a fila do pub/sub
-- Criar topico e sub da transaction
-- Criar transaction publica na fila, modificar na API
-- Conectar a fila no big query no pubsub
-- Worker pro graphql
-- graphql
-
-
-- Vídeo explicativo
-
