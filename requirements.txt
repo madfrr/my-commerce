@@ -28,6 +28,7 @@ loguru==0.7.2
 markdown-it-py==3.0.0
 MarkupSafe
 mdurl==0.1.2
+pre-commit
 proto-plus==1.24.0
 protobuf==5.28.2
 psycopg2==2.9.10
