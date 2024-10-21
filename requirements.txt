@@ -59,3 +59,4 @@ pytest
 pytest-docker
 pytest-mock
 pytest-env
+pytest-cov

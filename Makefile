@@ -9,32 +9,26 @@ NON_PROD_DESTINATION = $(HOST_NAME)/$(NON_PROD_GCP_PROJECT_ID)/$(PROJECT_NAME)
 
 VERSION=$(shell (git rev-parse HEAD))
 
+setup-local-dev-environment:
+	python3 -m venv venv && . ./venv/bin/activate && pip install -r requirements-dev.txt
+
 develop:
 	uvicorn --app-dir=./src server:api --reload --port 5000
 
 develop-docker:
 	docker compose up --build
 
-check:
-	ruff check --fix --no-cache ./src
+lint:
+	ruff check --output-format=github ./src
 
 format:
-	ruff format ./src
+	ruff format -v ./src
 
-develop-docker-build:
-	@make build
-	docker run --rm -t \
-	--env-file .env \
-	-p 5000:5000 \
-	-v `pwd`/src:/api \
-	--name $(PROJECT_NAME)  \
-	$(PROJECT_NAME):$(VERSION)
+test:
+	pytest tests --cov=src
 
-build:
-	docker build --tag $(PROJECT_NAME):$(VERSION) .
-
-stop:
-	docker stop $(PROJECT_NAME)
+test-html:
+	pytest tests --cov=src --cov-report html
 
 deploy:
 	@echo "Version ID: $(VERSION)";
