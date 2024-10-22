@@ -15,6 +15,7 @@ services:
     env_file: .env
     volumes:
       - ./src:/api
+      - $HOME/.config/gcloud:/root/.config/gcloud
     network_mode: "host"
     
 
