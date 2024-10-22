@@ -29,6 +29,7 @@ Com isso, tanto uma instancia do Postgres quanto a API serão levantadas. Para t
 ```bash
 curl --location 'localhost:5000/api/my-commerce/health-check'
 ```
+Ou acessando a documentação via swagger pelo link `localhost:5000/api/my-commerce/docs`
 
 #### Sem Docker
 Caso deseje executar a aplicação em ambiente de desenvolvimento, para execução de testes, deve-se primeiro verificar se a versão instalada do Pythom em seu sistema operacional é maior ou igual a 3.10.12, por motivos de compatibilidade. Caso afirmativo, executar os seguintes comandos no terminal:
@@ -44,6 +45,8 @@ Ou, executando com make:
 make setup-local-dev-environment
 make develop
 ```
+
+Obs
 
 ### Testes e lint
 Basta executar os comandos make abaixo ou verificar o comando por extenso dentro do Makefile.
@@ -137,6 +140,11 @@ src
 
 - psycopg2: Driver de conexão com PostgreSQL.
 
+## Cloud
+
+O projeto também foi deployado na GCP. Foi criado um container registry para subir as imagens do docker. As imagens são deployadas em uma solução serveless chamada Cloud Run. O Google Cloud Run está no meio termo da "escala de serveless" entre uma Máquina Virtual e uma AWS Lambda. Pesquisando pela internet, ela se assemelha ao AWS Fargate ou AWS AppRunner.
+O Cloud Run cria um ou mais containers a partir do registry e também acessa o Cloud SQL, que é a versão gerenciada do PostgresSQL as a service da Google.
+
 ## Trabalhos Futuros
 ### Regras de negócio:
 - No endpoint de atualização de Advertising, adicionar regra de quando zerar a quantidade (quantity), atualizar o status para inativo;
@@ -154,6 +162,10 @@ src
 - Adicionar novas funcionalidades para files. Talvez transformar ele em uma entidade com próprio controller e domain.
 
 ## Observações
+- Dentro da pasta `postman` é possível importar as requisições e ambiente para usar o Postman;
+- Dentro da pasta `lambda_functions` tem um exemplo de como criar uma lambda em ambiente de desenvolvimento
+
 ## Links Úteis
-    - Link do diagrama
-    - Link do vídeo
+[Diagrama](https://drive.google.com/file/d/1KiddnHSylonrtCbz23Yjnux5R27XsBxb/view?usp=drive_link)
+[Documentação](https://my-commerce-api-1001377699753.southamerica-east1.run.app/api/my-commerce/docs)
+[Versão Deployada](https://docs.docker.com/compose/install/)
