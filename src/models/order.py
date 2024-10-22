@@ -8,7 +8,6 @@ class CreateOrderResponse(BaseModel):
 
 
 class CreateOrder(BaseModel):
-    name: str
     transaction_id: str
     advertising_id: int
     price: float
@@ -17,7 +16,6 @@ class CreateOrder(BaseModel):
 
 class UpdateOrder(BaseModel):
     id: int
-    name: str | None
     transaction_id: str | None
     advertising_id: int | None
     price: float | None
@@ -25,7 +23,6 @@ class UpdateOrder(BaseModel):
 
 class OrderDTO(BaseModel):
     id: int | None = None
-    name: str | None = None
     transaction_id: str | None = None
     advertising_id: int | None = None
     price: float | None = None

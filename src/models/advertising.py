@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class CreateAdvertisingResponse(BaseModel):
@@ -11,7 +11,7 @@ class CreateAdvertising(BaseModel):
     user_id: str
     product_id: int
     status: str
-    expiration_timestamp: datetime
+    expiration_timestamp: datetime | None = datetime.now() + timedelta(days=7)
     quantity: int
     unit_price: float
 

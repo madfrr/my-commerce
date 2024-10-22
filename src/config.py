@@ -10,7 +10,7 @@ class AppConfig:
     application_name = getenv("APPLICATION_NAME")
     debug = bool(getenv("DEBUG", False))
     version = getenv("VERSION", "1.0.0")
-    port = getenv("PORT", 5000)
+    port = int(getenv("PORT", 5000))
     auth_token = getenv("AUTHORIZATION_TOKEN")
 
     docs_url = f"{app_prefix}/docs"

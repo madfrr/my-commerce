@@ -25,9 +25,9 @@ class TransactionDomain:
 
     def read(self, filter_query: FilterParams) -> ListTransactionDTO:
         id = filter_query.id
-        user_id = filter_query.user_id
-        product_id = filter_query.product_id
+        buyer_id = filter_query.buyer_id
+        seller_id = filter_query.seller_id
 
-        transactions = self.repo.read_transaction(id, user_id, product_id)
+        transactions = self.repo.read_transaction(id, buyer_id, seller_id)
         data = [TransactionDTO(**transaction) for transaction in transactions]
         return ListTransactionDTO(data=data)

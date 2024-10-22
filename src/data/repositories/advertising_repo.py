@@ -10,7 +10,7 @@ class AdvertisingRepo(AbstractRepo):
 
     def create_advertising(self, advertising: CreateAdvertising) -> str:
         query = """
-        insert into product(user_id, product_id, status, expiration_timestamp, quantity, unit_price)
+        insert into advertising(user_id, product_id, status, expiration_timestamp, quantity, unit_price)
         values %s
         RETURNING id;
         """
@@ -34,7 +34,6 @@ class AdvertisingRepo(AbstractRepo):
         WHERE id= %s;
         """
         data = (
-            advertising.name,
             advertising.user_id,
             advertising.product_id,
             advertising.status,

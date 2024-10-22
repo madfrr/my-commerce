@@ -10,22 +10,21 @@ class OrderRepo(AbstractRepo):
 
     def create_order(self, order: CreateOrder) -> str:
         query = """
-        insert into order(name, transaction_id, advertising_id, price)
+        insert into "order"(transaction_id, advertising_id, price)
         values %s
         RETURNING id;
         """
-        data = ((order.name, order.transaction_id, order.advertising_id, order.price),)
+        data = ((order.transaction_id, order.advertising_id, order.price),)
         id = self.db.execute_values(insert_query=query, data=data, fetch=True)
         return id[0][0]
 
     def update_order(self, order: UpdateOrder):
         query = """
-        UPDATE order
-        SET (name, transaction_id, advertising_id, price) = (%s, %s, %s, %s)
+        UPDATE "order"
+        SET (transaction_id, advertising_id, price) = (%s, %s, %s)
         WHERE id= %s;
         """
         data = (
-            order.name,
             order.transaction_id,
             order.advertising_id,
             order.price,
@@ -43,12 +42,11 @@ class OrderRepo(AbstractRepo):
         query = """
         select 
             id, 
-            name,
             transaction_id,
             advertising_id,
             price,
             created_at
-        from order
+        from "order"
         where 1=1 
         """
         params = []
@@ -71,7 +69,7 @@ class OrderRepo(AbstractRepo):
 
     def delete_order(self, id: int) -> bool:
         query = """
-        DELETE FROM order
+        DELETE FROM "order"
         where id = %s
         """
 
