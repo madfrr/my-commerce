@@ -21,5 +21,6 @@ services:
 
 volumes:
   pgisdata:
-    external:
-      name: mycommercedb_pgdata
+    name: mycommercedb_pgdata
+    external: true
+      
