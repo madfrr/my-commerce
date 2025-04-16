@@ -2,15 +2,15 @@ from models.product import CreateProductResponse, CreateProduct
 from domain.product import ProductDomain
 from data.repositories.product_repo import ProductRepo
 from data.repositories.file_repo import FileRepo
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 
 def test_create_product(mocker):
     product_repo = ProductRepo(db=None)
-    file_repo = FileRepo(bucket_name=None)
+    mock_client = mocker.patch("google.cloud.storage.Client")
+    file_repo = FileRepo(bucket_name=None, storage_client=mock_client)
 
     novo_id = 42
-
     file_exists_mock: MagicMock = mocker.patch.object(file_repo, "file_exists", return_value=True)
     create_product_mock: MagicMock = mocker.patch.object(product_repo, "create_product", return_value=novo_id)
 
