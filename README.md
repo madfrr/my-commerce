@@ -1,38 +1,38 @@
 # My-Commerce
 
-## Descrição
+## Description
 
-My-Commerce é um sistema que suporta operações básicas de e-commerce, como gerenciamento de usuários, produtos, anúncios e transações. O sistema utiliza PostgreSQL como banco de dados, integra-se com a Google Cloud Platform (GCP) para armazenamento de imagens e está configurado para deploy automático via Cloud Run e CI/CD do GitHub Actions.
-Esse projeto também serve para ser utilizado como boilerplate.
+My-Commerce is a system that supports basic e-commerce operations, such as managing users, products, listings, and transactions. The system uses PostgreSQL as the database, integrates with Google Cloud Platform (GCP) for image storage, and is configured for automatic deployment via Cloud Run and GitHub Actions CI/CD.
+This project can also be used as a boilerplate.
 
-## Instruções para Compilar e Executar o Projeto
-### Como Usar
+## Instructions to Build and Run the Project
+### How to Use
 
-O primeiro passo é fazer uma cópia do arquivo `.env_sample` e o renomear para `.env`. Após isso, é possível seguir com a execução do projeto utilizando ou não Docker.
+The first step is to make a copy of the `.env_sample` file and rename it to `.env`. After that, you can run the project either with or without Docker.
 
 #### Docker
-Caso não houver docker instalado, é necessário fazer a instalação seguindos os passos em: [link docker](https://www.docker.com/products/docker-desktop), [link docker compose](https://docs.docker.com/compose/install/);
+If Docker is not installed, follow the installation steps here: [link docker](https://www.docker.com/products/docker-desktop), [link docker compose](https://docs.docker.com/compose/install/);
 
-Para executar, basta digitar o comando abaixo no terminal
+To run the project, simply enter the command below in the terminal:
 ```bash
 docker compose up --build
 ```
 
-Para facilitar, os comandos acima foram adicionados em um Makefile. Então, caso tenha o make instalado no computador, basta executar:
+To make it easier, the above commands have been added to a Makefile. So, if make is installed on your machine, just run:
 
 ```bash
 make develop-docker
 ```
 
-Com isso, tanto uma instancia do Postgres quanto a API serão levantadas. Para testar o funcionamento da API, acessar a rota de health-check, pois ela não necessita de autenticação.
+This will bring up both a Postgres instance and the API. To test whether the API is working, access the health-check route, which does not require authentication:
 
 ```bash
 curl --location 'localhost:5000/api/my-commerce/health-check'
 ```
-Ou acessando a documentação via swagger pelo link `localhost:5000/api/my-commerce/docs`
+Or access the documentation via Swagger at `localhost:5000/api/my-commerce/docs`
 
-#### Sem Docker
-Caso deseje executar a aplicação em ambiente de desenvolvimento, para execução de testes, deve-se primeiro verificar se a versão instalada do Pythom em seu sistema operacional é maior ou igual a 3.10.12, por motivos de compatibilidade. Caso afirmativo, executar os seguintes comandos no terminal:
+#### Without Docker
+If you want to run the application in a local development environment for testing purposes, first ensure your Python version is 3.10.12 or higher for compatibility. If so, run the following commands in the terminal:
 ```bash
 python3 -m venv venv 
 source venv/bin/activate 
@@ -40,73 +40,70 @@ pip install -r requirements.txt
 uvicorn --app-dir=./src server:api --reload --port 5000
 ```
 
-Ou, executando com make:
+Or run it using `make`
 ```bash
 make setup-local-dev-environment
 make develop
 ```
 
-Obs
-
-### Testes e lint
-Basta executar os comandos make abaixo ou verificar o comando por extenso dentro do Makefile.
+### Tests and Lint
+Just run the following make commands, or check the full commands inside the Makefile:
 ```bash
 make test
 make lint
 make format
 ```
 
-## Decisões Técnicas e Arquiteturais
-### Arquitetura dos Sistemas
+## Technical and Architectural Decisions
+### System Architecture
     
 ![Arquitetura do Sistema](system_design.png)
 
-- Existe um servidor hospedando a API do MyCommerce. Essa API executa operações de CRUD sobre o banco de dados Postgres.
-- Foi escolhido um banco de dados relacional pois para transações e compras, é necessário ter consistência e respeitar as propriedades ACID.
-- Ao realizar qualquer operação de escrita em uma entidade, uma mensagem pode ser enviada a um sistema de mensageria, como o Kafka ou o próprio Google Cloud Pub/Sub. Caso a ferramenta de mensageria escolhida seja o Pub/Sub, é possível plugar a saída de um tópico em uma tabela no Google Cloud BigQuery (uma ferramenta de Datalake e Analytics).
-- Como dentro da parte de análise transacional entra análise de riscos e fraudes, foi pensado em conectar um worker na fila do pub/sub para popular um banco de grafos. O banco de grafos é comumente utilizado no mercado com esse intuito dado a facilidade de encontrar relações entre entidades (em outras palavras, caminhos dentro de um grafo). Esse mesmo serviço pode ter um processo responsável pela ingestão dos dados e outro processo para avaliar risco das últimas transações e, em caso de possível fraude, alertar um canal como Slack.
+- There is a server hosting the My-Commerce API. This API performs CRUD operations on a Postgres database.
+- A relational database was chosen to ensure consistency and ACID properties, which are essential for transactions and purchases.
+- When performing any write operation on an entity, a message can be sent to a messaging system such as Kafka or Google Cloud Pub/Sub. If Pub/Sub is used, it can be connected to a BigQuery table for analytics.
+- For fraud and risk analysis, a worker connected to the Pub/Sub queue was considered to populate a graph database. Graph databases are commonly used for this purpose due to their ability to efficiently detect relationships between entities (i.e., paths in a graph). This service can have one process to ingest data and another to assess risk in recent transactions, alerting a channel like Slack in case of potential fraud.
 
-### Estrutura do Banco de Dados
-Como Modelo Entidade Relacionamento (MER), as seguintes entidades foram elaboradas: Usuário(Cliente, Vendedor), Anuncio, Produto, Ordem (como uma ordem de serviço) e Transação. Como o código está padronizado em inglês, os nomes das entidades são respectivamente: User, Advertising, Product, Order e Transaction
 
-#### Entidades:
-- User: Usuário do sistema. Pode ser tanto um comprador quanto um vendedor;
-- Advertising: É o anúncio de um determinado usuário. Um usuário pode ter vários anúnios mas um anúncio pertence somente a um usuário;
-- Product: É o produto que está sendo "anunciado pelo anuncio";
-- Order: Em um e-commerce, geralmente um cliente consegue executar apenas uma transação para comprar vários produtos, assim como um produto poderia também ser pago com transações diferentes (exemplo, transação de cashback + crédito);
-- Transaction: É a transação feita entre dois usuários. 
+### Database Structure
+The Entity-Relationship Model (ERM) includes the following entities: User (Customer, Seller), Advertising, Product, Order (like a service order), and Transaction.
 
-#### Algumas regras ao elaborar o MER:
-- Uma Transaction é ou uma compra ou uma venda;
-- Um Advertising é de um Product em específico, porém pode ter N quantidade deste mesmo Product;
-- Advertising tem data de expiração;
-- Um Advertising pode ter no mínimo 0 produtos. Quando chega a esse valor, ele é desativado;
-- Quando a data de expiração de um Advertising é alcançada, ele é desativado;
+#### Entities:
+- User: A user of the system, either a buyer or seller;
+- Advertising: A listing created by a user. A user can have multiple listings, but a listing belongs to only one user;
+- Product: The product that is being advertised in the listing;
+- Order: In e-commerce, a customer can usually perform a single transaction to purchase multiple products, and a product can also be paid with multiple transactions (e.g., cashback + credit);
+- Transaction: The transaction made between two users.
 
-![MER](mer.png)
+#### ASome rules when modeling the ERM:
+- A transaction is either a purchase or a sale;
+- A listing is for one specific product, but it can have N units of it;
+- Listings have expiration dates;
+- A listing can have zero or more products. When it reaches zero, it is deactivated;
+- When the expiration date of a listing is reached, it is deactivated.
 
-#### Observações: 
-- Entidade "Order" foi criada pois a relação de transaction e Advertising estava N..N
-- No MeLi, o cliente consegue fazer apenas um pagamento e esse pagamento pode ser a compra de vários produtos de anúncios de vendedores diferentes. Mas para simplificar o diagrama, vamos considerar que o cliente consegue comprar/pagar 1 produto por vez;
-- No MER, produto aparece como entidade fraca de advertising, porém considerei com chave própria pois como o modelo está em estágio inicial, senti que seria uma melhoria prematura. Sem contar que essa modelagem pode evoluir para projetos como deduplicação de anúncios (onde existem vários anúncios com as mesmas características e produtos "iguais"), por exemplo.
-    
+![ERM](mer.png)
 
-### Arquitetura da API
+#### Notes: 
+- The Order entity was created because the relationship between Transaction and Advertising was many-to-many.
+- In MeLi, a customer can make a single payment to buy products from different sellers' listings. But for simplicity, here we assume that the customer purchases one product at a time;
+- In the ERM, Product appears as a weak entity of Advertising, but it was given its own key. Since the model is in an early stage, this was deemed a premature optimization. This structure could evolve into use cases like listing deduplication (where similar listings/products exist).  
 
-A arquitetura da API pode ser entendida observando a estrutura de pastas abaixo. Resumidamente, todas as classes responsaveis pela interação com a camada HTTP se encontra na pasta `controllers`. Essas classes, chamam as responsáveis pela regra de negócio na camada de domínio (ou `domain`) que por sua vez interage com bancos de dados e serviços externos pela camada de repositório (ou `repositories`).
+### API Achitecture
 
-Na pasta `data`, além de encontrar os repositórios, também são encontrados as classes de conexão com banco de dados e um dump do próprio banco.
+The API architecture can be understood by examining the folder structure below. In short, all classes that handle HTTP layer interactions are found in the `controller` folder. These call the `domain` layer, which contains business logic and interacts with databases and external services via the `repository` layer.
 
-Em `error_handler` e `exceptions`, são encontradas todas as lógicas para lidar com qualquer erro da aplicação.
+In the `data` folder, in addition to repositories, you’ll find database connection classes and a database dump.
 
-Em `models` são encontrados os DTOs e as classes de definição/serialização de objetos. Também são uteis para documentação. 
+In `error_handle` and `exceptions`, you’ll find the logic for application error handling.
 
-Algumas funcionalidades devem ser executadas como `middlewares`, ou seja, códigos que devem ser executados antes das requisições, como por exemplo validação de CORs e autenticação.
+In `models`, you’ll find DTOs and object serialization/definition classes. These are also helpful for documentation.
 
-Lógicas que são comuns em vários lugares, são encontradas dentro de `utils`.
+Some functions are executed as `middlewares`, i.e., code that runs before the requests (e.g., CORS and authentication validations).
 
-Para finalizar, foi utilizado o design pattern de *factory* com o objeto da API (objeto FastAPI). Basicamente, quando o app passa por algum método com prefixo "setup_", o app é modificado para receber esse novo conjunto de funcionalidades. Dessa forma fica fácil acoplar, desacoplar tanto as funcionalidades que já existem quanto novas. Sem contar que é possível reaproveitar essas funcionalidades em outras APIs. 
-Tudo isso é possível ser observado a partir do método `create_api` no arquivo `build.py`. Exemplo: caso o desenvolvedor deseja remover os middlewares, basta remover a linha `setup_middlewares(app)`.
+Utilities and shared logic are placed inside utils.
+
+Finally, a factory design pattern was used for the FastAPI app object. Each method with a "setup_" prefix modifies the app by adding new features. This makes it easy to plug/unplug features. These methods can also be reused across different APIs. This structure is visible in the `create_api` method inside `build.py`. For example, to remove middleware, just delete the line `setup_middlewares(app)`.
 
 ```
 src
@@ -128,44 +125,43 @@ src
 └── config.py
 ```
 
-### Justificativa para Frameworks ou Bibliotecas
+### Justification for Frameworks and Libraries
 
-- FastAPI: Dentre as frameworks de desenvolvimento web em python, é uma das mais rápidas, permitindo processamento assíncrono de requisições. Possui integração nativa com OpenAPI, facilitando a criação de documentações, também possui tipagem forte na camada de HTTP, é bem adotado pela comunidade, tem atualizações frequentes e documentação bem escrita e com exemplos. Também foi cogitado utilizar Flask com SQLAlchemy, porém acredito que FastAPI seja mais prático.
+- FastAPI: Among Python web frameworks, it’s one of the fastest, allowing for asynchronous request processing. It has native OpenAPI integration, facilitates documentation, provides strong typing, is widely adopted, and well-documented. Flask with SQLAlchemy was also considered, but FastAPI was found more practical.
 
-- Pytest, pytest-cov, pytest-mock, pytest-env e pytest-docker: Usado para testes unitários e funcionais. São bibliotecas simples e eficazes o suficiente para garantir cobertura, detectar bugs e fazer mock de funções e métodos sem a necessidade de criar classes específicas de mock. Com o pytest-mock, também é possível investigar a quantidade de vezes que uma função é chamada e se os argumentos de entrada e retorno estão corretos. Com pytest-docker é possível levantar serviços e bancos no momento de execução de testes.
+- Pytest, pytest-cov, pytest-mock, pytest-env, pytest-docker: Used for unit and functional testing. These libraries offer simple and efficient tools for test coverage, bug detection, and mocking. With pytest-mock, it’s possible to inspect how many times a function was called, along with its input/output. With pytest-docker, services and databases can be spun up at test time.
 
-- ruff: É o linter que prefiro. Útil para manter um padrão de código, identificação de variáveis e importações não utilizadas, facilitando a leitura e manutenção do código.
+- ruff: Preferred linter. Helps maintain code standards and identify unused variables/imports, improving readability and maintainability.
 
-- google-cloud-storage: Client da GCP para manipulação de arquivos no bucket da google, que eles chamam de cloud storage.
+- google-cloud-storage: GCP client library for managing files in cloud storage buckets.
 
-- psycopg2: Driver de conexão com PostgreSQL.
+- psycopg2: PostgreSQL connection driver.
 
 ## Cloud
 
-O projeto também foi deployado na GCP. Foi criado um container registry para subir as imagens do docker. As imagens são deployadas em uma solução serveless chamada Cloud Run. O Google Cloud Run está no meio termo da "escala de serveless" entre uma Máquina Virtual e uma AWS Lambda. Pesquisando pela internet, ela se assemelha ao AWS Fargate ou AWS AppRunner.
-O Cloud Run cria um ou mais containers a partir do registry e também acessa o Cloud SQL, que é a versão gerenciada do PostgresSQL as a service da Google.
+The project is deployed on GCP. A container registry was created to upload Docker images. These images are deployed to Cloud Run, a serverless solution. Cloud Run falls somewhere between a virtual machine and an AWS Lambda on the “serverless scale.” It is similar to AWS Fargate or AppRunner.
+Cloud Run launches one or more containers from the registry and also accesses Cloud SQL, Google’s managed PostgreSQL-as-a-service.
 
-## Trabalhos Futuros
-### Regras de negócio:
-- No endpoint de atualização de Advertising, adicionar regra de quando zerar a quantidade (quantity), atualizar o status para inativo;
-- Ao criar uma order, atualizar Advertising com a regra acima, ou seja, toda order criada atualiza a quantity e status de uma Advertising;
+## Future Work
+### Business Rules:
+- In the Advertising update endpoint, add a rule: if quantity becomes zero, update status to inactive;
+- When creating an Order, update Advertising with the rule above (update quantity and status).
 
-### Arquitetura:
-- Criar fila no Google Cloud Pub/Sub;
-- Publicar toda operação de escrita de transições no Pub/Sub;
-- Criar worker responsável por analisar e alertar sobre fraudes, além de popular o GraphQL.
-- Adicionar monitoramento como Requests por minuto (RPM), tempo médio das requisições, tempo médio em 80, 90 e 95 percentil, quantidade de erros por requisição por dia e erros 500 não mapeados. Tudo isso é possível ser feito pelo Datadog.
+### Architecture:
+- Create a queue on Google Cloud Pub/Sub;
+- Publish all write operations of transactions to Pub/Sub;
+- Create a worker to analyze fraud, send alerts, and populate GraphQL;
+- Add monitoring (e.g., RPM, average request time, 80/90/95 percentile latency, daily error rates, and unmapped 500 errors) — this can be done with Datadog.
 
-### Código:
-- Melhorar a cobertura de testes;
-- Adicionar mais testes funcionais;
-- Adicionar novas funcionalidades para files. Talvez transformar ele em uma entidade com próprio controller e domain.
+### Code:
+- Improve test coverage;
+- Add more functional tests;
+- Add new features for file handling — possibly make it an entity with its own controller and domain.
 
 ## Observações
-- Dentro da pasta `postman` é possível importar as requisições e ambiente para usar o Postman;
-- Dentro da pasta `lambda_functions` tem um exemplo de como criar uma lambda em ambiente de desenvolvimento
+- Inside the `postman` folder, you’ll find collections and environment files to import into Postman;
+- The `lambda_functions` folder contains an example of how to create a lambda in a dev environment.
 
 ## Links Úteis
-[Diagrama](https://drive.google.com/file/d/1KiddnHSylonrtCbz23Yjnux5R27XsBxb/view?usp=drive_link)
-[Documentação](https://my-commerce-api-1001377699753.southamerica-east1.run.app/api/my-commerce/docs)
-[Versão Deployada](https://docs.docker.com/compose/install/)
+[Diagram](https://drive.google.com/file/d/1KiddnHSylonrtCbz23Yjnux5R27XsBxb/view?usp=drive_link)
+[Documentation](https://my-commerce-api-1001377699753.southamerica-east1.run.app/api/my-commerce/docs)
